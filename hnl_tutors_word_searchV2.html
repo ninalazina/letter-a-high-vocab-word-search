@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Letter A High Vocabulary Words</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      /* Sunny beach background image */
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      /* More transparent background so the beach is visible */
+      background: rgba(255, 255, 255, 0.8);
+      display: inline-block;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 90%;
+    }
+    h1, h2 {
+      margin: 0;
+      padding: 5px;
+    }
+    h1 {
+      font-size: 36px;
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    p#instructions {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    #wordList {
+      margin: 10px 0;
+    }
+    #wordList span {
+      display: inline-block;
+      margin: 5px;
+      padding: 5px 10px;
+      border: 1px solid #333;
+      border-radius: 5px;
+      background-color: #eee;
+    }
+    #wordList span.found {
+      text-decoration: line-through;
+      background-color: lightgreen;
+      color: #555;
+    }
+    table {
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+    td {
+      border: 1px solid #333;
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      vertical-align: middle;
+      cursor: pointer;
+      user-select: none;
+    }
+    td.selected {
+      background-color: yellow;
+    }
+    td.found {
+      background-color: lightgreen;
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    footer a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Separate headings -->
+    <h1>HNL Tutors</h1>
+    <h2>Letter A High Vocabulary Words</h2>
+    <p id="instructions">
+      Drag over letters to find words. Go sideways or up/down (no diagonals). Words can go in four directions: left, right, up, or down. Find these words:
+    </p>
+    <div id="wordList"></div>
+    <div id="gridContainer"></div>
+    <footer>
+      <p>Visit our website: <a href="https://hnlnews.substack.com" target="_blank">https://hnlnews.substack.com</a></p>
+    </footer>
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // List of words to find (all in uppercase)
+      const wordsToFind = [
+        "APPRAISE", "AFFIX", "ACQUIRE", "ALCHEMY", "AWKWARD",
+        "ACCLAIM", "AFFABLE", "AZURE", "AMPLE", "AJAR", "AWE", "APT"
+      ];
+      
+      // Grid dimensions
+      const gridRows = 15;
+      const gridCols = 15;
+      
+      // Create an empty grid (2D array) filled with null values
+      let grid = [];
+      for (let r = 0; r < gridRows; r++) {
+        grid[r] = [];
+        for (let c = 0; c < gridCols; c++) {
+          grid[r][c] = null;
+        }
+      }
+      
+      // Function to place a word into the grid (only horizontally left-to-right or vertically top-to-bottom)
+      function placeWord(word) {
+        const orientations = ["horizontal", "vertical"];
+        // Randomly choose an orientation
+        const orientation = orientations[Math.floor(Math.random() * orientations.length)];
+        let attempts = 0;
+        while (attempts < 100) {
+          attempts++;
+          if (orientation === "horizontal") {
+            // Choose a random row and a random starting column so that the word fits
+            const row = Math.floor(Math.random() * gridRows);
+            const col = Math.floor(Math.random() * (gridCols - word.length + 1));
+            let canPlace = true;
+            for (let i = 0; i < word.length; i++) {
+              if (grid[row][col + i] !== null && grid[row][col + i] !== word[i]) {
+                canPlace = false;
+                break;
+              }
+            }
+            if (canPlace) {
+              for (let i = 0; i < word.length; i++) {
+                grid[row][col + i] = word[i];
+              }
+              return true;
+            }
+          } else if (orientation === "vertical") {
+            // Choose a random column and a random starting row so that the word fits
+            const col = Math.floor(Math.random() * gridCols);
+            const row = Math.floor(Math.random() * (gridRows - word.length + 1));
+            let canPlace = true;
+            for (let i = 0; i < word.length; i++) {
+              if (grid[row + i][col] !== null && grid[row + i][col] !== word[i]) {
+                canPlace = false;
+                break;
+              }
+            }
+            if (canPlace) {
+              for (let i = 0; i < word.length; i++) {
+                grid[row + i][col] = word[i];
+              }
+              return true;
+            }
+          }
+        }
+        return false; // Failed to place the word after many attempts
+      }
+      
+      // Place each word from the list into the grid
+      wordsToFind.forEach(word => {
+        if (!placeWord(word)) {
+          console.error("Could not place word: " + word);
+        }
+      });
+      
+      // Fill any remaining empty cells with random letters (A-Z)
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      for (let r = 0; r < gridRows; r++) {
+        for (let c = 0; c < gridCols; c++) {
+          if (grid[r][c] === null) {
+            grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+          }
+        }
+      }
+      
+      // Display the word list
+      const wordListDiv = document.getElementById("wordList");
+      let foundWords = {};
+      function updateWordList() {
+        wordListDiv.innerHTML = "";
+        wordsToFind.forEach(word => {
+          const span = document.createElement("span");
+          span.textContent = word;
+          if (foundWords[word]) {
+            span.classList.add("found");
+          }
+          wordListDiv.appendChild(span);
+        });
+      }
+      updateWordList();
+      
+      // Display the grid as an HTML table
+      const gridContainer = document.getElementById("gridContainer");
+      const table = document.createElement("table");
+      for (let r = 0; r < gridRows; r++) {
+        const tr = document.createElement("tr");
+        for (let c = 0; c < gridCols; c++) {
+          const td = document.createElement("td");
+          td.textContent = grid[r][c];
+          td.dataset.row = r;
+          td.dataset.col = c;
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+      gridContainer.appendChild(table);
+      
+      // Variables to track the user's selection
+      let isMouseDown = false;
+      let selectedCells = [];
+      
+      // Helper: Clear the current selection (remove temporary highlight)
+      function clearSelection() {
+        selectedCells.forEach(cell => cell.classList.remove("selected"));
+        selectedCells = [];
+      }
+      
+      // Helper: Ensure that the selected cells form a straight line horizontally or vertically
+      function isStraightLine(cells) {
+        if (cells.length < 2) return true;
+        const firstRow = cells[0].dataset.row;
+        const firstCol = cells[0].dataset.col;
+        let allSameRow = true;
+        let allSameCol = true;
+        for (let cell of cells) {
+          if (cell.dataset.row !== firstRow) allSameRow = false;
+          if (cell.dataset.col !== firstCol) allSameCol = false;
+        }
+        return (allSameRow || allSameCol);
+      }
+      
+      // Helper: Construct the word from the selected cells
+      function getWord(cells) {
+        return cells.map(cell => cell.textContent).join("");
+      }
+      
+      // Add mouse event listeners to each table cell for selection
+      const cells = table.getElementsByTagName("td");
+      for (let cell of cells) {
+        cell.addEventListener("mousedown", function(e) {
+          isMouseDown = true;
+          clearSelection();
+          cell.classList.add("selected");
+          selectedCells.push(cell);
+        });
+        cell.addEventListener("mouseover", function(e) {
+          if (isMouseDown && !cell.classList.contains("selected")) {
+            cell.classList.add("selected");
+            selectedCells.push(cell);
+          }
+        });
+        cell.addEventListener("mouseup", function(e) {
+          if (isMouseDown) {
+            isMouseDown = false;
+            if (!isStraightLine(selectedCells)) {
+              clearSelection();
+              return;
+            }
+            let word = getWord(selectedCells);
+            let reversedWord = word.split("").reverse().join("");
+            if (wordsToFind.includes(word) || wordsToFind.includes(reversedWord)) {
+              let foundWord = wordsToFind.includes(word) ? word : reversedWord;
+              foundWords[foundWord] = true;
+              // Mark the cells as permanently found
+              selectedCells.forEach(cell => cell.classList.add("found"));
+              updateWordList();
+            }
+            clearSelection();
+          }
+        });
+      }
+      
+      // In case the mouse is released outside of a cell
+      document.addEventListener("mouseup", function(e) {
+        if (isMouseDown) {
+          isMouseDown = false;
+          if (!isStraightLine(selectedCells)) {
+            clearSelection();
+            return;
+          }
+          let word = getWord(selectedCells);
+          let reversedWord = word.split("").reverse().join("");
+          if (wordsToFind.includes(word) || wordsToFind.includes(reversedWord)) {
+            let foundWord = wordsToFind.includes(word) ? word : reversedWord;
+            foundWords[foundWord] = true;
+            selectedCells.forEach(cell => cell.classList.add("found"));
+            updateWordList();
+          }
+          clearSelection();
+        }
+      });
+      
+    });
+  </script>
+</body>
+</html>
+
+
